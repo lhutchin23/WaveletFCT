@@ -1,0 +1,16 @@
+{
+  "data_path": "../DATA",
+  "batch_size": 2,
+  "accumulation_steps": 1,
+  "epochs": 300,
+  "lr": 0.0005,
+  "num_classes": 4,
+  "save_dir": "./checkpoints",
+  "split_type": "random",
+  "scheduler": "cosine",
+  "use_tta": true,
+  "early_stopping": false,
+  "patience": 20,
+  "t0": 10,
+  "resume": "checkpoints/20260118_151508/epoch_200.pth"
+}
