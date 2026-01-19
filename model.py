@@ -228,7 +228,7 @@ class WaveletDenoiseBlock(nn.Module):
         return x_denoised
 
 
-# Implementation of FCT comes from the official FCT github (https://github.com/Thanos-DB/FullyConvolutionalTransformer)
+# The base Fully Convolutional Transformer architecture comes from the official FCT github (https://github.com/Thanos-DB/FullyConvolutionalTransformer)
 class Attention(nn.Module):
     def __init__(
         self,
@@ -411,7 +411,9 @@ class Block_encoder_bottleneck(nn.Module):
             self.conv3 = nn.Conv2d(out_channels, out_channels, 3, 1, padding="same")
 
         self.trans = Transformer(out_channels, att_heads, dpr)
-        self.wavelet_pool = MorletWaveletDecomp2D(out_channels, kernel_size=wavelet_kernel)
+        self.wavelet_pool = MorletWaveletDecomp2D(
+            out_channels, kernel_size=wavelet_kernel
+        )
 
     def forward(self, x, scale_img=None):
         x1 = x.permute(0, 2, 3, 1)
@@ -443,7 +445,9 @@ class Block_decoder(nn.Module):
     ):
         super().__init__()
         self.layernorm = nn.LayerNorm(in_channels, eps=1e-5)
-        self.wavelet_upsample = MorletInverseWavelet2D(in_channels, kernel_size=wavelet_kernel)
+        self.wavelet_upsample = MorletInverseWavelet2D(
+            in_channels, kernel_size=wavelet_kernel
+        )
         self.conv1 = nn.Conv2d(in_channels, out_channels, 3, 1, padding="same")
         self.conv2 = nn.Conv2d(out_channels * 2, out_channels, 3, 1, padding="same")
         self.conv3 = nn.Conv2d(out_channels, out_channels, 3, 1, padding="same")
@@ -511,7 +515,6 @@ class FCT(nn.Module):
 
         self.denoise = WaveletDenoiseBlock(1, kernel_size=wavelet_kernel)
 
-         
         # wavelet decomp instead of avg pool:wq
         self.scale_wavelet = MorletWaveletDecomp2D(1, kernel_size=wavelet_kernel)
 
@@ -603,5 +606,3 @@ class FCT(nn.Module):
         }
         params["denoise_threshold"] = self.denoise.threshold.item()
         return params
-
-

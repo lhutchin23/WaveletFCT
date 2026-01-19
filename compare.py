@@ -3,8 +3,8 @@ Compares the dice value to the leaderboard's dice value on the CAMUS dataset (20
 
 CAMUS Leaderboard evaluates:
 - LV-endocardium (inner wall of left ventricle)
-- LV-epicardium (outer wall) 
-- Left Atrium 
+- LV-epicardium (outer wall)
+- Left Atrium
 
 Results are split by cardiac phase:
 - ED (End-Diastole)
@@ -24,7 +24,7 @@ from dataloader import load_camus_dataset, normalize_images
 from model import FCT
 
 
-# CAMUS Leaderboard reference (top 5)
+# CAMUS leaderboard for DICE scores
 LEADERBOARD = {
     "LV_endocardium": {
         "ED": [
@@ -88,7 +88,6 @@ def calculate_dice(pred_binary, target_binary):
     return (2.0 * intersection / (union + 1e-7)).item()
 
 
-
 def evaluate_camus_metrics(model, images, masks, metadata, device):
     """
     Evaluate model using CAMUS leaderboard metrics.
@@ -108,20 +107,20 @@ def evaluate_camus_metrics(model, images, masks, metadata, device):
 
     with torch.no_grad():
         for i in tqdm(range(len(images)), desc="Evaluating"):
-            image = torch.FloatTensor(images[i:i+1]).to(device)
-            mask = masks[i]  
+            image = torch.FloatTensor(images[i : i + 1]).to(device)
+            mask = masks[i]
             phase = metadata[i]["phase"]  # "ED" or "ES"
 
             # Get prediction
             _, _, out9 = model(image)
             pred = torch.sigmoid(out9)
-
-            pred_binary = (pred > 0.5).float().cpu().numpy()[0]  
+            #numpy only works with CPU
+            pred_binary = (pred > 0.5).float().cpu().numpy()[0]
 
             # Ground truth classes
-            gt_lv = mask[1]        # Class 1: LV (endocardium)
-            gt_myo = mask[2]       # Class 2: Myocardium
-            gt_la = mask[3]        # Class 3: LA
+            gt_lv = mask[1]  # Class 1: LV (endocardium)
+            gt_myo = mask[2]  # Class 2: Myocardium
+            gt_la = mask[3]  # Class 3: LA
 
             pred_lv = pred_binary[1]
             pred_myo = pred_binary[2]
@@ -164,7 +163,9 @@ def get_rank(score, leaderboard_entries):
 
 def print_comparison(results):
     """print comparisons"""
-    print(f"\n  {'Structure':<20} {'ED Dice':<10} {'Rank':<8} {'ES Dice':<10} {'Rank':<8}")
+    print(
+        f"\n  {'Structure':<20} {'ED Dice':<10} {'Rank':<8} {'ES Dice':<10} {'Rank':<8}"
+    )
     print(f"  {'-'*56}")
 
     overall_scores = []
@@ -184,12 +185,18 @@ def print_comparison(results):
 
 def main():
     parser = argparse.ArgumentParser(description="Compare model to CAMUS leaderboard")
-    parser.add_argument("--checkpoint", type=str, default=None,
-                        help="Path to checkpoint. If not provided, uses latest best_model.pth")
-    parser.add_argument("--data_path", type=str, default="./DATA",
-                        help="Path to CAMUS dataset")
-    parser.add_argument("--save_results", action="store_true",
-                        help="Save results to JSON file")
+    parser.add_argument(
+        "--checkpoint",
+        type=str,
+        default=None,
+        help="Path to checkpoint. If not provided, uses latest best_model.pth",
+    )
+    parser.add_argument(
+        "--data_path", type=str, default="./DATA", help="Path to CAMUS dataset"
+    )
+    parser.add_argument(
+        "--save_results", action="store_true", help="Save results to JSON file"
+    )
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -215,7 +222,6 @@ def main():
     model.eval()
 
     # Load test data using official split
-    print(f"Loading CAMUS dataset from {args.data_path}...")
     images, masks, metadata = load_camus_dataset(
         data_root=args.data_path,
         target_size=(224, 224),
@@ -226,18 +232,21 @@ def main():
     data_root = Path(args.data_path)
     test_file = data_root / "subgroup_testing.txt"
     if test_file.exists():
-        with open(test_file, 'r') as f:
+        with open(test_file, "r") as f:
             test_patients = set(line.strip() for line in f if line.strip())
 
         # Filter to test set only
-        test_indices = [i for i, m in enumerate(metadata) if m["patient_id"] in test_patients]
+        test_indices = [
+            i for i, m in enumerate(metadata) if m["patient_id"] in test_patients
+        ]
         images = images[test_indices]
         masks = masks[test_indices]
         metadata = [metadata[i] for i in test_indices]
-        print(f"Using official test split: {len(test_indices)} samples from {len(test_patients)} patients")
+        print(
+            f"Using official test split: {len(test_indices)} samples from {len(test_patients)} patients"
+        )
     else:
         print("no split found")
-
 
     results = evaluate_camus_metrics(model, images, masks, metadata, device)
 
@@ -246,7 +255,7 @@ def main():
     # Save results
     if args.save_results:
         output_path = checkpoint_path.parent / "leaderboard_comparison.json"
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(results, f, indent=2)
         print(f"\nResults saved to: {output_path}")
 

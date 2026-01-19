@@ -225,21 +225,30 @@ def load_official_split(data_root):
     def read_patients(filepath):
         if not filepath.exists():
             raise FileNotFoundError(f"Split file not found: {filepath}")
-        with open(filepath, 'r') as f:
+        with open(filepath, "r") as f:
             return set(line.strip() for line in f if line.strip())
 
     train_patients = read_patients(train_file)
     val_patients = read_patients(val_file)
     test_patients = read_patients(test_file)
 
-    print(f"Official split: {len(train_patients)} train, {len(val_patients)} val, {len(test_patients)} test patients")
+    print(
+        f"Official split: {len(train_patients)} train, {len(val_patients)} val, {len(test_patients)} test patients"
+    )
 
     return train_patients, val_patients, test_patients
 
 
 def create_dataloaders(
-    images, masks, metadata, batch_size=8, train_split=0.7, val_split=0.15, num_workers=0,
-    split_type="random", data_root=None
+    images,
+    masks,
+    metadata,
+    batch_size=8,
+    train_split=0.7,
+    val_split=0.15,
+    num_workers=0,
+    split_type="random",
+    data_root=None,
 ):
     """
     Create train/val/test dataloaders with augmentation for training set.
