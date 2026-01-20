@@ -7,9 +7,9 @@ It achieved comparable performance to UNet models with 2.3M parameters and outsc
 Comparison:
 Architecture | Original FCT | WaveletFCT
 |---|---| --- |
-Downsampling | Average Pooling | 2D Discrete Wavelet Transform passing along LL subband
-Upsampling | Bilnear interpolation | Inverse Discrete Wavelet Transform 
-Preprocessing | None | 2D Wavelet Denoising
+Downsampling | Average Pooling | learnable 2D Discrete Wavelet Transform passing along LL subband
+Upsampling | Bilnear interpolation | learnable Inverse Discrete Wavelet Transform 
+Preprocessing | None | dynamic 2D Wavelet Denoising
 Skip Connections | Feature Maps | Feature Maps + Wavelet Subbands (LH, HL, HH)
 
 
@@ -92,5 +92,6 @@ Tragakis, Athanasios and Kaul, Chitanya and Murray-Smith, Roderick and Husmeier,
 
 S. Leclerc, E. Smistad, J. Pedrosa, A. Ostvik, et al.
 "Deep Learning for Segmentation using an Open Large-Scale Dataset in 2D Echocardiography" in IEEE Transactions on Medical Imaging, vol. 38, no. 9, pp. 2198-2210, Sept. 2019.
+
 
 doi: 10.1109/TMI.2019.2900516
